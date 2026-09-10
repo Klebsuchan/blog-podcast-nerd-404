@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "description": "",
+  "name": "Podcast Nerd 404",
+  "description": "O seu portal definitivo sobre tecnologia, cultura pop e o universo geek.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
