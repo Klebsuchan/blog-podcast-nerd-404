@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { Post, Video } from '../types';
 import { Link } from 'react-router-dom';
-import { Bell, ArrowRight, Facebook, Youtube, Instagram, PlayCircle } from 'lucide-react';
+import { Bell, ArrowRight, Facebook, Youtube, Instagram, PlayCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import Modal from '../components/Modal';
 import { fetchYouTubeVideos } from '../lib/youtube';
 
@@ -13,6 +13,19 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  const scrollLeft = () => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({ left: -400, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({ left: 400, behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
     let unsubscribe: () => void;
@@ -56,11 +69,8 @@ export default function Home() {
   const zueiraNerdVideo = regularVideos.find(v => v.title.toLowerCase().includes('zueira nerd show') || v.title.toLowerCase().includes('zueira nerd')) || regularVideos[1];
   const nerdsInvestemVideo = regularVideos.find(v => v.title.toLowerCase().includes('nerds investem')) || regularVideos[2];
   
-  let bottomVideos = regularVideos.filter(v => 
-      v.id !== paposDeNerdVideo?.id && 
-      v.id !== zueiraNerdVideo?.id && 
-      v.id !== nerdsInvestemVideo?.id
-  );
+  // Show all regular videos in the carousel to maximize content
+  let bottomVideos = [...regularVideos];
 
   let filteredPosts = posts;
 
@@ -69,7 +79,7 @@ export default function Home() {
     bottomVideos = videos.filter(v => v.title.toLowerCase().includes(queryLower));
     filteredPosts = posts.filter(p => p.title.toLowerCase().includes(queryLower) || p.excerpt.toLowerCase().includes(queryLower));
   } else {
-    bottomVideos = bottomVideos.slice(0, 4);
+    bottomVideos = bottomVideos.slice(0, 15);
   }
 
   // Shorts / Cortes
@@ -255,32 +265,50 @@ export default function Home() {
              </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            {bottomVideos.map((video) => (
-              <div key={video.id} className="flex flex-col group">
-                <a href={video.youtubeUrl} target="_blank" rel="noopener noreferrer" className="aspect-video w-full bg-gray-900 mb-4 overflow-hidden relative block group-hover:scale-105 transition-transform duration-300">
-                   <img 
-                    className="w-full h-full object-cover z-0"
-                    src={video.thumbnailUrl} 
-                    alt={video.title}
-                  />
-                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                     <PlayCircle size={48} className="text-white drop-shadow-lg" />
-                  </div>
-                  {/* Mock Nerd 404 watermark */}
-                  <div className="absolute top-2 left-2 bg-[#0000ff] text-white text-[10px] font-bold italic px-1 z-10 pointer-events-none">NERD 404</div>
-                </a>
-                <h4 className="text-white text-lg font-light leading-snug group-hover:text-blue-400 transition-colors uppercase mb-4">
-                  {video.title}
-                </h4>
-                <a href={video.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-white font-bold text-sm tracking-wider uppercase flex items-center gap-2 mt-auto pb-2 border-b-2 border-blue-600 self-start hover:text-blue-400 hover:border-blue-400 transition-colors">
-                  Assista Aqui →
-                </a>
-              </div>
-            ))}
-            {bottomVideos.length === 0 && (
-              <p className="text-gray-400 text-sm">Nenhum vídeo no momento.</p>
-            )}
+          <div className="relative group/carousel">
+            <button 
+              onClick={scrollLeft}
+              className="hidden md:flex absolute -left-4 top-[40%] -translate-y-1/2 z-20 bg-[#0b1f38] hover:bg-[#1fd2c9] text-[#1fd2c9] hover:text-black border border-[#1fd2c9]/50 p-2 rounded-full transition-colors shadow-[0_0_10px_rgba(31,210,201,0.2)] opacity-0 group-hover/carousel:opacity-100"
+              aria-label="Rolar para esquerda"
+            >
+              <ChevronLeft size={24} />
+            </button>
+
+            <div ref={carouselRef} className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              {bottomVideos.map((video) => (
+                <div key={video.id} className="flex-none w-[85%] md:w-[45%] xl:w-[23%] flex flex-col group snap-start">
+                  <a href={video.youtubeUrl} target="_blank" rel="noopener noreferrer" className="aspect-video w-full bg-gray-900 mb-4 overflow-hidden relative block group-hover:scale-105 transition-transform duration-300">
+                     <img 
+                      className="w-full h-full object-cover z-0"
+                      src={video.thumbnailUrl} 
+                      alt={video.title}
+                    />
+                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                       <PlayCircle size={48} className="text-white drop-shadow-lg" />
+                    </div>
+                    {/* Mock Nerd 404 watermark */}
+                    <div className="absolute top-2 left-2 bg-[#0000ff] text-white text-[10px] font-bold italic px-1 z-10 pointer-events-none">NERD 404</div>
+                  </a>
+                  <h4 className="text-white text-lg font-light leading-snug group-hover:text-blue-400 transition-colors uppercase mb-4 line-clamp-2 min-h-[3.5rem]">
+                    {video.title}
+                  </h4>
+                  <a href={video.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-white font-bold text-sm tracking-wider uppercase flex items-center gap-2 mt-auto pb-2 border-b-2 border-blue-600 self-start hover:text-blue-400 hover:border-blue-400 transition-colors">
+                    Assista Aqui →
+                  </a>
+                </div>
+              ))}
+              {bottomVideos.length === 0 && (
+                <p className="text-gray-400 text-sm">Nenhum vídeo no momento.</p>
+              )}
+            </div>
+
+            <button 
+              onClick={scrollRight}
+              className="hidden md:flex absolute -right-4 top-[40%] -translate-y-1/2 z-20 bg-[#0b1f38] hover:bg-[#1fd2c9] text-[#1fd2c9] hover:text-black border border-[#1fd2c9]/50 p-2 rounded-full transition-colors shadow-[0_0_10px_rgba(31,210,201,0.2)] opacity-0 group-hover/carousel:opacity-100"
+              aria-label="Rolar para direita"
+            >
+              <ChevronRight size={24} />
+            </button>
           </div>
         </div>
       </div>
