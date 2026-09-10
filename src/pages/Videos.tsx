@@ -5,6 +5,7 @@ import { Video } from '../types';
 import { Youtube, PlayCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { fetchYouTubeVideos } from '../lib/youtube';
 
 export default function Videos() {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -13,10 +14,9 @@ export default function Videos() {
   useEffect(() => {
     async function fetchVideos() {
       try {
-        const res = await fetch('/api/youtube');
-        const data = await res.json();
-        if (data.videos) {
-          setVideos(data.videos);
+        const fetchedVideos = await fetchYouTubeVideos();
+        if (fetchedVideos.length > 0) {
+          setVideos(fetchedVideos);
         }
       } catch (error) {
         console.error("Failed to fetch youtube videos", error);

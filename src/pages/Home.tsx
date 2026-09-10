@@ -5,6 +5,7 @@ import { Post, Video } from '../types';
 import { Link } from 'react-router-dom';
 import { Bell, ArrowRight, Facebook, Youtube, Instagram, PlayCircle } from 'lucide-react';
 import Modal from '../components/Modal';
+import { fetchYouTubeVideos } from '../lib/youtube';
 
 export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -28,14 +29,9 @@ export default function Home() {
           setLoading(false);
         });
 
-        try {
-          const res = await fetch('/api/youtube');
-          const data = await res.json();
-          if (data.videos) {
-            setVideos(data.videos); // Keep all videos for dynamic sections
-          }
-        } catch (error) {
-          console.error("Failed to fetch youtube videos", error);
+        const fetchedVideos = await fetchYouTubeVideos();
+        if (fetchedVideos.length > 0) {
+          setVideos(fetchedVideos);
         }
       } catch (error) {
         handleFirestoreError(error, OperationType.LIST, 'posts/videos');
