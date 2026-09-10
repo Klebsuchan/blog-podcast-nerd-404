@@ -160,7 +160,7 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-white pb-24 font-sans text-black">
-      <div className="bg-[#05001d] text-white">
+      <div className="bg-gradient-to-r from-[#050814] via-[#0b1f38] to-[#1fd2c9] text-white">
         <div className="max-w-[1400px] mx-auto px-4 lg:px-8 h-16 flex items-center justify-between">
           <h1 className="text-xl font-black uppercase tracking-widest text-[#ffc107]">Admin Panel</h1>
           <div className="flex items-center gap-4">

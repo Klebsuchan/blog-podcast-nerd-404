@@ -3,12 +3,14 @@ import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { Post, Video } from '../types';
 import { Link } from 'react-router-dom';
-import { Bell, ArrowRight, Facebook, Twitter, Youtube, Instagram } from 'lucide-react';
+import { Bell, ArrowRight, Facebook, Youtube, Instagram, PlayCircle } from 'lucide-react';
+import Modal from '../components/Modal';
 
 export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeModal, setActiveModal] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -17,9 +19,15 @@ export default function Home() {
         const postsSnapshot = await getDocs(postsQ);
         setPosts(postsSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as Post)));
 
-        const videosQ = query(collection(db, 'videos'), orderBy('createdAt', 'desc'), limit(3));
-        const videosSnapshot = await getDocs(videosQ);
-        setVideos(videosSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as Video)));
+        try {
+          const res = await fetch('/api/youtube');
+          const data = await res.json();
+          if (data.videos) {
+            setVideos(data.videos); // Keep all videos for dynamic sections
+          }
+        } catch (error) {
+          console.error("Failed to fetch youtube videos", error);
+        }
       } catch (error) {
         handleFirestoreError(error, OperationType.LIST, 'posts/videos');
       } finally {
@@ -31,121 +39,195 @@ export default function Home() {
 
   const featuredPosts = posts.slice(0, 4);
   const regularPosts = posts.slice(4);
+  
+  const regularVideos = videos.filter(v => !v.isShort);
+  const paposDeNerdVideo = regularVideos.find(v => v.title.toLowerCase().includes('papos do nerd') || v.title.toLowerCase().includes('papos de nerd')) || regularVideos[0];
+  const zueiraNerdVideo = regularVideos.find(v => v.title.toLowerCase().includes('zueira nerd show') || v.title.toLowerCase().includes('zueira nerd')) || regularVideos[1];
+  const nerdsInvestemVideo = regularVideos.find(v => v.title.toLowerCase().includes('nerds investem')) || regularVideos[2];
+  
+  const bottomVideos = regularVideos.filter(v => 
+      v.id !== paposDeNerdVideo?.id && 
+      v.id !== zueiraNerdVideo?.id && 
+      v.id !== nerdsInvestemVideo?.id
+  ).slice(0, 4);
+
+  // Shorts / Cortes
+  let cortesVideos = videos.filter(v => v.isShort);
+  if (cortesVideos.length < 3) {
+      const moreCortes = regularVideos.filter(v => 
+          v.id !== paposDeNerdVideo?.id && 
+          v.id !== zueiraNerdVideo?.id && 
+          v.id !== nerdsInvestemVideo?.id &&
+          !bottomVideos.find(bv => bv.id === v.id)
+      );
+      cortesVideos = [...cortesVideos, ...moreCortes].slice(0, 3);
+  } else {
+      cortesVideos = cortesVideos.slice(0, 3);
+  }
 
   if (loading) {
     return <div className="min-h-screen bg-white flex items-center justify-center text-xl font-bold">Carregando...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-white font-sans text-black">
+    <div className="min-h-screen bg-[#030614] font-sans text-white">
       
-      {/* Hero Section - Split Image/Yellow */}
-      {featuredPosts.length > 0 && (
-        <div className="flex flex-col lg:flex-row h-auto lg:h-[600px] w-full">
-          {/* Left Side (Image) */}
-          <Link to={`/post/${featuredPosts[0].id}`} className="relative lg:w-2/3 h-[400px] lg:h-full bg-black group block">
-            {featuredPosts[0].coverImage ? (
-              <img src={featuredPosts[0].coverImage} alt="" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-            ) : (
-              <div className="w-full h-full bg-gray-800" />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-            <div className="absolute bottom-0 left-0 p-8 lg:p-12 w-full">
-              <h2 className="text-white text-3xl lg:text-5xl font-bold leading-tight group-hover:underline underline-offset-4 decoration-[#ffc107]">
-                {featuredPosts[0].title}
-              </h2>
-              <p className="text-gray-200 mt-4 text-lg lg:text-xl line-clamp-2">
-                {featuredPosts[0].excerpt}
-              </p>
-            </div>
-          </Link>
-
-          {/* Right Side (Yellow bg list) */}
-          <div className="lg:w-1/3 bg-[#ffc107] p-8 lg:p-12 flex flex-col justify-center">
-            <h3 className="font-light text-xl mb-8 uppercase tracking-widest text-black">Mais Lidas</h3>
-            <div className="flex flex-col gap-8">
-              {featuredPosts.slice(1, 4).map((post, idx) => (
-                <Link key={post.id} to={`/post/${post.id}`} className="flex gap-4 group">
-                  <div className="w-12 h-12 bg-[#0000ff] text-white flex items-center justify-center text-3xl font-bold italic flex-shrink-0">
-                    {idx + 1}
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider block mb-1">Cinema E TV</span>
-                    <h4 className="text-lg font-medium leading-tight group-hover:underline">{post.title}</h4>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Main Content Container */}
-      <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-16">
-        
-        {/* Timeline Posts */}
-        <div className="max-w-4xl mb-16 relative">
-          <div className="absolute left-[70px] top-4 bottom-0 w-px bg-blue-200 -z-10 hidden md:block"></div>
-          
-          <div className="flex flex-col gap-12">
-            {regularPosts.slice(0, 3).map((post) => (
-              <div key={post.id} className="flex flex-col md:flex-row gap-6 relative">
-                <div className="hidden md:block w-[140px] flex-shrink-0 pt-2">
-                   <span className="bg-white border border-blue-200 text-black text-xs font-bold uppercase py-1 px-3 rounded-full shadow-sm z-10 relative">Agora Mesmo</span>
+      {/* Hero Section */}
+      <div className="relative w-full overflow-hidden bg-[#030614] text-white pt-8 pb-16 lg:py-24 border-b border-gray-800">
+         {/* Background glows */}
+         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-500/20 rounded-full blur-[120px] pointer-events-none"></div>
+         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"></div>
+         <div className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[30%] h-[30%] bg-[#ff00ff]/10 rounded-full blur-[100px] pointer-events-none"></div>
+       
+         {/* Grid overlay */}
+         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
+         
+         <div className="max-w-[1500px] mx-auto px-4 lg:px-8 relative z-10">
+           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
+             
+             {/* Left Section: Dynamic Content (Panels) */}
+             <div className="lg:col-span-4 relative min-h-[400px] lg:min-h-[500px] hidden lg:flex flex-col justify-center">
+                <div className="grid grid-cols-2 grid-rows-2 gap-4 h-full max-h-[600px] w-full">
+                   {/* Main Panel */}
+                   <a href={paposDeNerdVideo?.youtubeUrl || "#"} target="_blank" rel="noopener noreferrer" className="col-span-2 row-span-1 relative bg-gray-900 border border-purple-500/30 hover:border-purple-400/80 rounded-[2rem] p-5 shadow-[0_0_30px_rgba(255,0,255,0.1)] overflow-hidden group hover:-translate-y-1 transition-all duration-300 block">
+                      <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${paposDeNerdVideo?.thumbnailUrl || 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?q=80&w=600'})` }}></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+                      <div className="relative h-full flex flex-col justify-end">
+                        <h3 className="text-xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-[#ff00ff] to-[#00ffff] mb-1 drop-shadow-lg">PAPOS DE NERD</h3>
+                        <p className="text-xs text-gray-200 font-medium line-clamp-2 drop-shadow-md">{paposDeNerdVideo?.title}</p>
+                      </div>
+                   </a>
+       
+                   {/* Bottom-Left Panel */}
+                   <a href={zueiraNerdVideo?.youtubeUrl || "#"} target="_blank" rel="noopener noreferrer" className="col-span-1 row-span-1 relative bg-gray-900 border border-cyan-500/30 hover:border-cyan-400/80 rounded-[2rem] p-4 shadow-[0_0_30px_rgba(0,255,255,0.1)] overflow-hidden group hover:-translate-y-1 transition-all duration-300 block">
+                      <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${zueiraNerdVideo?.thumbnailUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=400'})` }}></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+                      <div className="relative h-full flex flex-col justify-end">
+                        <h3 className="text-xs font-bold text-cyan-400 mb-1 leading-tight uppercase tracking-wider drop-shadow-md">ZUEIRA NERD</h3>
+                        <p className="text-[10px] text-gray-200 line-clamp-2 drop-shadow-md">{zueiraNerdVideo?.title}</p>
+                      </div>
+                   </a>
+       
+                   {/* Bottom-Right Panel */}
+                   <a href={nerdsInvestemVideo?.youtubeUrl || "#"} target="_blank" rel="noopener noreferrer" className="col-span-1 row-span-1 relative bg-gray-900 border border-green-500/30 hover:border-green-400/80 rounded-[2rem] p-4 shadow-[0_0_30px_rgba(0,255,0,0.1)] overflow-hidden group hover:-translate-y-1 transition-all duration-300 block">
+                      <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${nerdsInvestemVideo?.thumbnailUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=400'})` }}></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+                      <div className="relative h-full flex flex-col justify-end">
+                        <h3 className="text-xs font-bold text-green-400 mb-1 leading-tight uppercase tracking-wider drop-shadow-md">NERDS INVESTEM</h3>
+                        <p className="text-[10px] text-gray-200 line-clamp-2 drop-shadow-md">{nerdsInvestemVideo?.title}</p>
+                      </div>
+                   </a>
                 </div>
-                
-                <Link to={`/post/${post.id}`} className="flex flex-col md:flex-row gap-6 group flex-1">
-                  <div className="w-full md:w-[320px] aspect-video bg-gray-200 flex-shrink-0 overflow-hidden">
-                    {post.coverImage && (
-                      <img src={post.coverImage} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                    )}
-                  </div>
-                  <div className="flex flex-col justify-center flex-1 pr-8">
-                    <span className="text-xs font-bold uppercase tracking-wider mb-2">Cinema E TV</span>
-                    <h4 className="text-2xl font-bold leading-tight group-hover:text-blue-700 transition-colors mb-3">
-                      {post.title}
-                    </h4>
-                    <p className="text-gray-600 text-lg line-clamp-2">
-                      {post.excerpt}
-                    </p>
-                  </div>
-                </Link>
-                {/* Floating Notification Icon mock */}
-                <div className="absolute right-0 bottom-0 md:bottom-auto md:top-1/2 md:-translate-y-1/2 p-2 rounded-full bg-gray-50 border border-gray-200 text-blue-500 shadow-sm cursor-pointer hover:bg-gray-100">
-                  <Bell size={18} />
+             </div>
+       
+             {/* Center Section: Titles & Actions */}
+             <div className="lg:col-span-5 flex flex-col items-center lg:items-start text-center lg:text-left z-20 relative lg:py-8">
+               <div className="absolute inset-0 bg-[#0a0d1a]/40 backdrop-blur-3xl rounded-[3rem] border border-white/5 shadow-2xl -z-10"></div>
+               <div className="p-8 lg:p-10 w-full">
+                 {/* Badge */}
+                 {videos.length > 0 && (
+                    <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-bold px-4 py-2 rounded-full mb-8">
+                       <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                       🎙️ NO AR: {videos[0].title.slice(0, 35)}...
+                    </div>
+                 )}
+                 
+                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-black mb-4 leading-[1.1] tracking-tight">
+                   <span className="text-white block">BEM-VINDO AO HUB</span>
+                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">DO PODCAST NERD 404.</span>
+                 </h1>
+                 <h2 className="text-xl md:text-2xl font-mono font-bold text-cyan-400/80 mb-6 relative inline-block group">
+                    ERROR 404: TÉDIO NÃO ENCONTRADO.
+                 </h2>
+                 
+                 <p className="text-gray-400 text-lg mb-10 leading-relaxed">
+                    Cultura Pop, Nostalgia, Tecnologia e Empreendedorismo. Tudo com a essência do nosso cast. Mergulhe nos nossos bate-papos e artigos exclusivos.
+                 </p>
+                 
+                 <div className="flex flex-col sm:flex-row gap-4 w-full">
+                    <a href={videos[0]?.youtubeUrl || "#"} target="_blank" rel="noopener noreferrer" className="bg-[#0000ff] hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-full transition-all shadow-[0_0_20px_rgba(0,0,255,0.3)] hover:shadow-[0_0_30px_rgba(0,0,255,0.5)] flex items-center justify-center gap-2 uppercase tracking-wide">
+                      Assista Agora <PlayCircle size={20} />
+                    </a>
+                    <button className="bg-transparent border border-gray-600 hover:border-gray-400 hover:bg-white/5 text-gray-300 hover:text-white font-bold py-4 px-8 rounded-full transition-all uppercase tracking-wide flex items-center justify-center">
+                      Explorar Categorias
+                    </button>
+                 </div>
+               </div>
+             </div>
+       
+             {/* Right Section: Cortes & Parceiros */}
+             <div className="lg:col-span-3 flex flex-col justify-between gap-6 z-20 lg:py-8">
+                {/* Cortes Recentes */}
+                <div className="bg-[#0a0d1a]/60 backdrop-blur-md border border-white/5 rounded-[2rem] p-6">
+                   <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                     <span className="w-1 h-4 bg-cyan-400 rounded-full"></span>
+                     Cortes Recentes
+                   </h4>
+                   <div className="flex flex-col gap-5">
+                     {cortesVideos.map((corte, i) => (
+                        <a key={i} href={corte.youtubeUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 group">
+                          <div className="relative w-20 h-14 rounded-2xl overflow-hidden flex-shrink-0 border border-gray-800">
+                             <img src={corte.thumbnailUrl} alt="" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                             <div className="absolute inset-0 flex items-center justify-center">
+                               <PlayCircle size={20} className="text-white drop-shadow-md group-hover:scale-110 transition-transform" />
+                             </div>
+                          </div>
+                          <h5 className="text-[10px] font-bold text-gray-400 group-hover:text-cyan-400 transition-colors line-clamp-2 leading-relaxed uppercase tracking-wider">
+                            {corte.title}
+                          </h5>
+                        </a>
+                     ))}
+                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        
+       
+                {/* Redes Sociais */}
+                <div className="bg-gradient-to-t from-[#1a1c29]/50 to-transparent border border-white/5 rounded-[2rem] p-6 flex-1 flex flex-col justify-end">
+                    <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4 text-center">Nossas Redes</h4>
+                    <div className="flex justify-center gap-4 opacity-80">
+                      <a href="https://www.youtube.com/@podcastnerd404" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-10 h-10 bg-white/5 hover:bg-[#ff0000] rounded-full transition-colors">
+                        <Youtube size={18} />
+                      </a>
+                      <a href="https://www.instagram.com/podcastnerd404/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-10 h-10 bg-white/5 hover:bg-[#E1306C] rounded-full transition-colors">
+                        <Instagram size={18} />
+                      </a>
+                      <a href="https://www.facebook.com/profile.php?id=61569124091867" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-10 h-10 bg-white/5 hover:bg-[#0000ff] rounded-full transition-colors">
+                        <Facebook size={18} />
+                      </a>
+                    </div>
+                </div>
+             </div>
+       
+           </div>
+         </div>
       </div>
 
-      {/* YouTube Section (Dark Blue) */}
-      <div className="bg-[#05001d] w-full py-16">
+      {/* YouTube Section (Gradient matched to logo) */}
+      <div className="bg-gradient-to-r from-[#050814] via-[#0b1f38] to-[#1fd2c9] w-full py-16">
         <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
           <div className="flex justify-between items-end mb-12 border-b border-[#ffffff1a] pb-4">
              <h2 className="text-black bg-[#ffc107] text-3xl md:text-5xl font-bold uppercase inline-block px-4 py-2">
                Assista no Canal
              </h2>
              <Link to="/videos" className="text-white hover:text-gray-300 flex items-center gap-1 font-bold tracking-widest text-sm uppercase">
-                EiNerd no Youtube <ArrowRight size={16} className="-rotate-45" />
+                Podcast Nerd 404 no Youtube <ArrowRight size={16} className="-rotate-45" />
              </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            {videos.map((video) => (
+            {bottomVideos.map((video) => (
               <div key={video.id} className="flex flex-col group">
-                <div className="aspect-video w-full bg-gray-900 mb-4 overflow-hidden relative">
-                   <iframe 
-                    className="w-full h-full z-0"
-                    src={video.youtubeUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')} 
-                    title={video.title}
-                    allowFullScreen
+                <a href={video.youtubeUrl} target="_blank" rel="noopener noreferrer" className="aspect-video w-full bg-gray-900 mb-4 overflow-hidden relative block group-hover:scale-105 transition-transform duration-300">
+                   <img 
+                    className="w-full h-full object-cover z-0"
+                    src={video.thumbnailUrl} 
+                    alt={video.title}
                   />
-                  {/* Mock EiNerd watermark */}
-                  <div className="absolute top-2 left-2 bg-[#0000ff] text-white text-[10px] font-bold italic px-1 z-10 pointer-events-none">eiNERD!</div>
-                </div>
+                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                     <PlayCircle size={48} className="text-white drop-shadow-lg" />
+                  </div>
+                  {/* Mock Nerd 404 watermark */}
+                  <div className="absolute top-2 left-2 bg-[#0000ff] text-white text-[10px] font-bold italic px-1 z-10 pointer-events-none">NERD 404</div>
+                </a>
                 <h4 className="text-white text-lg font-light leading-snug group-hover:text-blue-400 transition-colors uppercase mb-4">
                   {video.title}
                 </h4>
@@ -154,14 +236,14 @@ export default function Home() {
                 </a>
               </div>
             ))}
-            {videos.length === 0 && (
+            {bottomVideos.length === 0 && (
               <p className="text-gray-400 text-sm">Nenhum vídeo no momento.</p>
             )}
           </div>
         </div>
       </div>
 
-      {/* Additional Content Block (Quadrinhos) */}
+      {/* Additional Content Block (Matérias) */}
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-16">
         <div className="border-t-[3px] border-[#ff7a00] pt-8 mb-12 flex justify-between items-start">
            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 flex-1 pr-8">
@@ -178,85 +260,127 @@ export default function Home() {
              ))}
            </div>
            <div className="bg-[#ff7a00] text-black font-bold uppercase text-xl px-4 py-1">
-             Quadrinhos →
+             Matérias →
            </div>
-        </div>
-      </div>
-
-      {/* Newsletter Block */}
-      <div className="bg-[#f0f4ff] py-16">
-        <div className="max-w-[1400px] mx-auto px-4 lg:px-8 flex flex-col md:flex-row items-center justify-between">
-           <div className="flex items-center gap-6 mb-6 md:mb-0">
-             <div className="w-16 h-16 bg-[#0000ff] text-white flex items-center justify-center">
-               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-             </div>
-             <div>
-               <h4 className="font-bold text-lg">ASSINE A NEWSLETTER</h4>
-               <p className="text-black">Aproveite para ter acesso ao conteúdo da revista e muito mais.</p>
-             </div>
-           </div>
-           <button className="border border-[#0000ff] text-[#0000ff] hover:bg-[#0000ff] hover:text-white transition-colors text-xs font-bold px-8 py-3 uppercase tracking-wider">
-             Assinar Agora
-           </button>
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="bg-[#05001d] text-white py-16">
+      <footer className="bg-[#02050f] text-white py-16 border-t border-gray-900">
         <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
             
-            <div className="col-span-1">
-               <div className="bg-[#0000ff] inline-flex items-center px-4 py-2 mb-8">
-                  <div className="flex items-center gap-2">
-                    <div className="flex bg-white p-0.5 rounded-sm gap-0.5">
-                       <div className="w-1 h-1 bg-black rounded-full"></div>
-                       <div className="w-1 h-1 bg-black rounded-full"></div>
-                    </div>
-                    <span className="font-bold text-xl tracking-tighter text-white font-serif italic">ei<span className="uppercase font-sans not-italic font-black">NERD!</span></span>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-4 text-xs font-bold tracking-wider">
-                  <a href="#" className="hover:text-gray-400 uppercase">Políticas de Privacidade</a>
-                  <a href="#" className="hover:text-gray-400 uppercase">Políticas de Cookies</a>
-                  <a href="#" className="hover:text-gray-400 uppercase">Termos de Uso</a>
-                  <a href="#" className="hover:text-gray-400 uppercase">Fale Conosco</a>
-                  <a href="#" className="hover:text-gray-400 uppercase">Imprensa</a>
-                  <a href="#" className="hover:text-gray-400 uppercase">Contato Comercial</a>
-                </div>
+            {/* Logo and Description */}
+            <div className="col-span-1 md:col-span-12 lg:col-span-5">
+               <div className="mb-6">
+                 <img src="/logonerd.png" alt="Logo" className="h-10 md:h-12 object-contain" />
+               </div>
+               <p className="text-gray-400 text-sm leading-relaxed max-w-sm mb-8">
+                 O seu portal definitivo sobre tecnologia, cultura pop e o universo geek. Fique por dentro de todos os nossos episódios e novidades.
+               </p>
+               <div className="flex gap-4 text-gray-400">
+                 <a href="https://www.facebook.com/profile.php?id=61569124091867" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors bg-white/5 hover:bg-[#0000ff] p-2.5 rounded-full"><Facebook size={20} /></a>
+                 <a href="https://www.youtube.com/@podcastnerd404" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors bg-white/5 hover:bg-[#ff0000] p-2.5 rounded-full"><Youtube size={20} /></a>
+                 <a href="https://www.instagram.com/podcastnerd404/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors bg-white/5 hover:bg-[#E1306C] p-2.5 rounded-full"><Instagram size={20} /></a>
+               </div>
             </div>
 
-            <div className="col-span-1">
-              <h4 className="text-[#ffc107] font-medium text-lg mb-8">Veja Mais</h4>
-              <div className="flex flex-col gap-4 text-xs font-bold tracking-wider">
-                <a href="#" className="hover:text-gray-400 uppercase">Cyberclass - Conheça</a>
-                <a href="#" className="hover:text-gray-400 uppercase">Whey Nerd</a>
-                <a href="#" className="hover:text-gray-400 uppercase">Mundo da Música</a>
-                <a href="#" className="hover:text-gray-400 uppercase">Feed Club</a>
-                <a href="#" className="hover:text-gray-400 uppercase">Cifras</a>
-                <a href="#" className="hover:text-gray-400 uppercase">Letras</a>
+            {/* Institucional */}
+            <div className="col-span-1 md:col-span-6 lg:col-span-3 lg:col-start-7">
+              <h4 className="text-white font-bold tracking-wider uppercase mb-6 text-sm">Institucional</h4>
+              <div className="flex flex-col gap-4 text-sm text-gray-400">
+                  <button onClick={() => setActiveModal('contact')} className="hover:text-[#0000ff] text-left transition-colors w-fit">Fale Conosco</button>
+                  <button onClick={() => setActiveModal('commercial')} className="hover:text-[#0000ff] text-left transition-colors w-fit">Contato Comercial</button>
               </div>
             </div>
 
-            <div className="col-span-1 md:col-span-2 flex flex-col items-end justify-start">
-               <div className="flex items-center gap-6 text-[#ffc107] font-medium">
-                  Siga-nos
-                  <div className="flex gap-4 text-white">
-                    <a href="#" className="hover:text-gray-400"><Facebook size={24} /></a>
-                    <a href="#" className="hover:text-gray-400"><Twitter size={24} /></a>
-                    <a href="#" className="hover:text-gray-400"><Youtube size={24} /></a>
-                    <a href="#" className="hover:text-gray-400"><Instagram size={24} /></a>
-                  </div>
-               </div>
+            {/* Legal */}
+            <div className="col-span-1 md:col-span-6 lg:col-span-3">
+              <h4 className="text-white font-bold tracking-wider uppercase mb-6 text-sm">Legal</h4>
+              <div className="flex flex-col gap-4 text-sm text-gray-400">
+                  <button onClick={() => setActiveModal('privacy')} className="hover:text-[#0000ff] text-left transition-colors w-fit">Políticas de Privacidade</button>
+                  <button onClick={() => setActiveModal('cookies')} className="hover:text-[#0000ff] text-left transition-colors w-fit">Políticas de Cookies</button>
+                  <button onClick={() => setActiveModal('terms')} className="hover:text-[#0000ff] text-left transition-colors w-fit">Termos de Uso</button>
+              </div>
             </div>
 
           </div>
           
-          <div className="mt-16 pt-8 border-t border-[#ffffff1a] flex justify-end">
-            <p className="text-gray-400 text-xs">Ei Nerd! © 2026. Todos os direitos reservados.</p>
+          {/* Bottom Bar */}
+          <div className="mt-16 pt-8 border-t border-gray-900/50 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-gray-500 text-xs font-medium">Podcast Nerd 404 © {new Date().getFullYear()}. Todos os direitos reservados.</p>
+            <p className="text-gray-500 text-xs font-medium flex items-center gap-1">Feito com <span className="text-red-500">♥</span> para os Nerds.</p>
           </div>
         </div>
       </footer>
+
+      {/* Modals */}
+      <Modal isOpen={activeModal === 'privacy'} onClose={() => setActiveModal(null)} title="Políticas de Privacidade">
+        <div className="space-y-4 text-gray-600">
+          <p><strong>1. Coleta de Dados:</strong> Coletamos informações fornecidas por você durante a interação com nosso site, como nome e e-mail para contato.</p>
+          <p><strong>2. Uso das Informações:</strong> As informações coletadas são utilizadas para personalizar sua experiência, melhorar nosso site e enviar atualizações relevantes sobre o Podcast Nerd 404.</p>
+          <p><strong>3. Proteção de Dados:</strong> Empregamos medidas de segurança para proteger suas informações pessoais contra acesso não autorizado.</p>
+          <p><strong>4. Compartilhamento:</strong> Não vendemos ou comercializamos suas informações pessoais para terceiros.</p>
+          <p>Para dúvidas adicionais, entre em contato através da seção "Fale Conosco".</p>
+        </div>
+      </Modal>
+
+      <Modal isOpen={activeModal === 'cookies'} onClose={() => setActiveModal(null)} title="Políticas de Cookies">
+        <div className="space-y-4 text-gray-600">
+          <p>Utilizamos cookies para otimizar sua experiência no site.</p>
+          <p><strong>Cookies Essenciais:</strong> Necessários para o funcionamento básico do site.</p>
+          <p><strong>Cookies de Desempenho:</strong> Nos ajudam a entender como os visitantes interagem com o site, coletando e relatando informações anonimamente.</p>
+          <p><strong>Gerenciamento:</strong> Você pode controlar ou excluir cookies conforme desejar em seu próprio navegador.</p>
+        </div>
+      </Modal>
+
+      <Modal isOpen={activeModal === 'terms'} onClose={() => setActiveModal(null)} title="Termos de Uso">
+        <div className="space-y-4 text-gray-600">
+          <p>Ao acessar e usar este site, você concorda em cumprir e estar vinculado aos seguintes termos de uso.</p>
+          <p><strong>Propriedade Intelectual:</strong> Todo o conteúdo, design e layout deste site são de propriedade do Podcast Nerd 404. É proibida a reprodução sem autorização.</p>
+          <p><strong>Conduta do Usuário:</strong> Você concorda em usar o site apenas para fins legais e de maneira que não infrinja os direitos de terceiros.</p>
+          <p><strong>Isenção de Responsabilidade:</strong> O conteúdo fornecido é apenas para fins informativos e de entretenimento.</p>
+        </div>
+      </Modal>
+
+      <Modal isOpen={activeModal === 'contact'} onClose={() => setActiveModal(null)} title="Fale Conosco">
+        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setActiveModal(null); alert('Mensagem enviada com sucesso!'); }}>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+            <input type="text" required className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+            <input type="email" required className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem</label>
+            <textarea required rows={4} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+          <button type="submit" className="bg-[#0000ff] text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors font-bold uppercase tracking-wider text-sm w-full">
+            Enviar Mensagem
+          </button>
+        </form>
+      </Modal>
+
+      <Modal isOpen={activeModal === 'commercial'} onClose={() => setActiveModal(null)} title="Contato Comercial">
+        <div className="space-y-6 text-gray-600">
+          <p>Tem interesse em anunciar no Podcast Nerd 404 ou propor uma parceria?</p>
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+            <h4 className="font-bold text-gray-900 mb-2 uppercase tracking-wider text-sm">Oportunidades de Parceria</h4>
+            <ul className="list-disc pl-5 space-y-2 text-sm">
+              <li>Anúncios (Mid-roll e Pre-roll)</li>
+              <li>Episódios Patrocinados</li>
+              <li>Ações em Mídias Sociais</li>
+              <li>Presença em Eventos</li>
+            </ul>
+          </div>
+          <p className="font-medium text-gray-900">
+            Envie sua proposta para: <a href="mailto:comercial@nerd404.com.br" className="text-blue-600 hover:underline">comercial@nerd404.com.br</a>
+          </p>
+        </div>
+      </Modal>
+
     </div>
   );
 }

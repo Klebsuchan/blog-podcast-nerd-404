@@ -66,7 +66,7 @@ export default function PostView() {
             {format(post.createdAt.toDate(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
           </div>
           <span>•</span>
-          <div>Por <span className="text-black">Redação Nerd</span></div>
+          <div>Por <span className="text-black">Podcast Nerd 404</span></div>
         </div>
 
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-black mb-8 leading-[1.1]">

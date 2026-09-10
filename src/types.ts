@@ -15,9 +15,12 @@ export interface Video {
   id?: string;
   title: string;
   youtubeUrl: string;
+  thumbnailUrl?: string;
+  publishedAt?: string;
+  isShort?: boolean;
   description?: string;
-  createdAt: Timestamp;
-  authorId: string;
+  createdAt?: Timestamp;
+  authorId?: string;
 }
 
 export interface Admin {

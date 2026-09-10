@@ -10,6 +10,7 @@ import Blog from './pages/Blog';
 import PostView from './pages/PostView';
 import Videos from './pages/Videos';
 import Admin from './pages/Admin';
+import CookieBanner from './components/CookieBanner';
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
             <Route path="/admin" element={<Admin />} />
           </Routes>
         </main>
+        <CookieBanner />
       </div>
     </BrowserRouter>
   );

@@ -13,11 +13,13 @@ export default function Videos() {
   useEffect(() => {
     async function fetchVideos() {
       try {
-        const q = query(collection(db, 'videos'), orderBy('createdAt', 'desc'));
-        const snapshot = await getDocs(q);
-        setVideos(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Video)));
+        const res = await fetch('/api/youtube');
+        const data = await res.json();
+        if (data.videos) {
+          setVideos(data.videos);
+        }
       } catch (error) {
-        handleFirestoreError(error, OperationType.LIST, 'videos');
+        console.error("Failed to fetch youtube videos", error);
       } finally {
         setLoading(false);
       }
@@ -41,7 +43,7 @@ export default function Videos() {
   };
 
   return (
-    <div className="min-h-screen bg-[#05001d] text-white pt-12 pb-24 font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-[#050814] via-[#0b1f38] to-[#1fd2c9] text-white pt-12 pb-24 font-sans">
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
         <div className="flex items-end mb-12 border-b border-[#ffffff1a] pb-4">
            <h1 className="text-black bg-[#ffc107] text-3xl md:text-5xl font-bold uppercase inline-block px-4 py-2">
@@ -65,19 +67,20 @@ export default function Videos() {
                 key={video.id}
                 className="flex flex-col group"
               >
-                <div className="aspect-video w-full bg-black mb-4 relative overflow-hidden">
-                  <iframe 
-                    className="w-full h-full z-0 relative"
-                    src={getEmbedUrl(video.youtubeUrl)} 
-                    title={video.title}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowFullScreen
+                <a href={video.youtubeUrl} target="_blank" rel="noopener noreferrer" className="aspect-video w-full bg-black mb-4 relative overflow-hidden block group-hover:scale-105 transition-transform duration-300">
+                  <img 
+                    className="w-full h-full object-cover z-0 relative"
+                    src={video.thumbnailUrl} 
+                    alt={video.title}
                   />
-                  <div className="absolute top-2 left-2 bg-[#0000ff] text-white text-[10px] font-bold italic px-1 z-10 pointer-events-none">eiNERD!</div>
-                </div>
+                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                     <PlayCircle size={48} className="text-white drop-shadow-lg" />
+                  </div>
+                  <div className="absolute top-2 left-2 bg-[#0000ff] text-white text-[10px] font-bold italic px-1 z-10 pointer-events-none">NERD 404</div>
+                </a>
                 <div>
                   <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
-                    {format(video.createdAt.toDate(), "dd MMM, yyyy", { locale: ptBR })}
+                    {video.publishedAt ? format(new Date(video.publishedAt), "dd MMM, yyyy", { locale: ptBR }) : ''}
                   </div>
                   <h2 className="text-xl font-light mb-2 line-clamp-2 leading-snug group-hover:text-blue-400 uppercase transition-colors cursor-pointer">{video.title}</h2>
                   {video.description && (
