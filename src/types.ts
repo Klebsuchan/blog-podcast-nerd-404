@@ -6,6 +6,7 @@ export interface Post {
   excerpt: string;
   content: string;
   coverImage?: string;
+  videoUrl?: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
   authorId: string;

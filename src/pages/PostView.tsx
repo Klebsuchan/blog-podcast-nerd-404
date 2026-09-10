@@ -83,6 +83,24 @@ export default function PostView() {
           </div>
         )}
 
+        {post.videoUrl && (
+          <div className="w-full aspect-video bg-gray-900 mb-12 overflow-hidden shadow-lg border border-gray-200">
+            <iframe
+              width="100%"
+              height="100%"
+              src={`https://www.youtube.com/embed/${(() => {
+                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+                const match = post.videoUrl.match(regExp);
+                return (match && match[2].length === 11) ? match[2] : '';
+              })()}`}
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
+        )}
+
         <div className="prose prose-lg prose-blue max-w-none text-black prose-headings:font-black prose-a:text-[#0000ff] prose-a:no-underline hover:prose-a:underline prose-p:leading-relaxed mx-auto">
           <div className="markdown-body">
             <Markdown>{post.content}</Markdown>

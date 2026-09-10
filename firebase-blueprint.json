@@ -9,6 +9,7 @@
         "excerpt": { "type": "string", "maxLength": 300 },
         "content": { "type": "string", "maxLength": 20000 },
         "coverImage": { "type": "string", "maxLength": 1000 },
+        "videoUrl": { "type": "string", "maxLength": 500 },
         "createdAt": { "type": "number" },
         "updatedAt": { "type": "number" },
         "authorId": { "type": "string", "maxLength": 128 }

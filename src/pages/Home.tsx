@@ -181,17 +181,20 @@ export default function Home() {
                 </div>
        
                 {/* Redes Sociais */}
-                <div className="bg-gradient-to-t from-[#1a1c29]/50 to-transparent border border-white/5 rounded-[2rem] p-6 flex-1 flex flex-col justify-end">
-                    <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4 text-center">Nossas Redes</h4>
-                    <div className="flex justify-center gap-4 opacity-80">
-                      <a href="https://www.youtube.com/@podcastnerd404" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-10 h-10 bg-white/5 hover:bg-[#ff0000] rounded-full transition-colors">
-                        <Youtube size={18} />
+                <div className="bg-[#0a0d1a]/60 backdrop-blur-md border border-white/5 rounded-[2rem] p-6 flex-1 flex flex-col items-center justify-center gap-6">
+                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest text-center w-full">Nossas Redes</h4>
+                    <div className="grid grid-cols-2 gap-4 w-full">
+                      <a href="https://www.youtube.com/@podcastnerd404" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center aspect-square bg-white/5 hover:bg-[#ff0000] rounded-2xl transition-all group border border-white/5 hover:border-transparent shadow-lg">
+                        <Youtube size={36} className="text-gray-400 group-hover:text-white transition-colors mb-3 group-hover:scale-110 duration-300" />
+                        <span className="text-[10px] font-bold text-gray-500 group-hover:text-white uppercase tracking-widest">YouTube</span>
                       </a>
-                      <a href="https://www.instagram.com/podcastnerd404/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-10 h-10 bg-white/5 hover:bg-[#E1306C] rounded-full transition-colors">
-                        <Instagram size={18} />
+                      <a href="https://www.instagram.com/podcastnerd404/" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center aspect-square bg-white/5 hover:bg-[#E1306C] rounded-2xl transition-all group border border-white/5 hover:border-transparent shadow-lg">
+                        <Instagram size={36} className="text-gray-400 group-hover:text-white transition-colors mb-3 group-hover:scale-110 duration-300" />
+                        <span className="text-[10px] font-bold text-gray-500 group-hover:text-white uppercase tracking-widest">Instagram</span>
                       </a>
-                      <a href="https://www.facebook.com/profile.php?id=61569124091867" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-10 h-10 bg-white/5 hover:bg-[#0000ff] rounded-full transition-colors">
-                        <Facebook size={18} />
+                      <a href="https://www.facebook.com/profile.php?id=61569124091867" target="_blank" rel="noopener noreferrer" className="col-span-2 flex flex-col items-center justify-center py-6 bg-white/5 hover:bg-[#0000ff] rounded-2xl transition-all group border border-white/5 hover:border-transparent shadow-lg">
+                        <Facebook size={36} className="text-gray-400 group-hover:text-white transition-colors mb-3 group-hover:scale-110 duration-300" />
+                        <span className="text-[10px] font-bold text-gray-500 group-hover:text-white uppercase tracking-widest">Facebook</span>
                       </a>
                     </div>
                 </div>

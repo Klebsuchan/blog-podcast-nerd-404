@@ -19,8 +19,8 @@ export default function Navbar() {
             
             {/* Left Section: Logo & Nav Links */}
             <div className="flex items-center h-full">
-              {/* Logo Area */}
-              <Link to="/" className="flex items-center h-full mr-8">
+              {/* Logo Area (Hidden Admin Access) */}
+              <Link to="/admin" className="flex items-center h-full mr-8" title="Área Restrita">
                 <img src="/logonerd.png" alt="Logo" className="h-10 md:h-12 object-contain" />
               </Link>
               
@@ -39,11 +39,6 @@ export default function Navbar() {
               <button className="text-white hover:text-gray-300">
                 <Search size={22} />
               </button>
-              
-              <Link to={user ? "/admin" : "/login"} className="flex items-center gap-2 text-white text-xs font-bold hover:text-gray-300 ml-2">
-                <User size={18} />
-                {user ? "ADMIN" : "ENTRAR"}
-              </Link>
               
               <button className="text-gray-400 hover:text-white ml-2 bg-[#ffffff1a] p-2 rounded-full">
                 <Bell size={18} />
