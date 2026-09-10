@@ -157,9 +157,9 @@ export default function Home() {
                <div className="p-8 lg:p-10 w-full">
                  {/* Badge */}
                  {videos.length > 0 && (
-                    <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-bold px-4 py-2 rounded-full mb-8">
-                       <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                       🎙️ NO AR: {videos[0].title.slice(0, 35)}...
+                    <div className="inline-flex items-start sm:items-center gap-2 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-bold px-4 py-2 rounded-2xl sm:rounded-full mb-8 text-left max-w-full">
+                       <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse mt-1 sm:mt-0 flex-shrink-0"></span>
+                       <span className="line-clamp-2 sm:line-clamp-none">🎙️ NO AR: {videos[0].title}</span>
                     </div>
                  )}
                  
