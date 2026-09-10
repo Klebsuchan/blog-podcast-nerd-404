@@ -1,0 +1,75 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helpers
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    
+    function incoming() {
+      return request.resource.data;
+    }
+    
+    function existing() {
+      return resource.data;
+    }
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Entity Validators
+    function isValidPost(data) {
+      return data.keys().hasAll(['title', 'excerpt', 'content', 'createdAt', 'updatedAt', 'authorId']) &&
+             data.title is string && data.title.size() <= 150 &&
+             data.excerpt is string && data.excerpt.size() <= 300 &&
+             data.content is string && data.content.size() <= 20000 &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp &&
+             data.authorId is string && data.authorId == request.auth.uid &&
+             (data.get('coverImage', '') is string && data.get('coverImage', '').size() <= 1000);
+    }
+
+    function isValidVideo(data) {
+      return data.keys().hasAll(['title', 'youtubeUrl', 'createdAt', 'authorId']) &&
+             data.title is string && data.title.size() <= 150 &&
+             data.youtubeUrl is string && data.youtubeUrl.size() <= 500 &&
+             data.createdAt is timestamp &&
+             data.authorId is string && data.authorId == request.auth.uid &&
+             (data.get('description', '') is string && data.get('description', '').size() <= 1000);
+    }
+
+    // Routes
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(postId) && isValidPost(incoming()) && incoming().createdAt == request.time && incoming().updatedAt == request.time && incoming().keys().size() <= 7;
+      allow update: if isAdmin() && isValidId(postId) && isValidPost(incoming()) && incoming().authorId == existing().authorId && incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'excerpt', 'content', 'coverImage', 'updatedAt']);
+      allow delete: if isAdmin();
+    }
+
+    match /videos/{videoId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(videoId) && isValidVideo(incoming()) && incoming().createdAt == request.time && incoming().keys().size() <= 5;
+      allow update: if isAdmin() && isValidId(videoId) && isValidVideo(incoming()) && incoming().authorId == existing().authorId && incoming().createdAt == existing().createdAt && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'youtubeUrl', 'description']);
+      allow delete: if isAdmin();
+    }
+
+    match /admins/{adminId} {
+      // Allow read so users can check if they are an admin.
+      allow read: if isSignedIn() && request.auth.uid == adminId;
+      // Bootstrapping admins: You could manually add your UID here from the Firebase console.
+      allow write: if false; 
+    }
+  }
+}

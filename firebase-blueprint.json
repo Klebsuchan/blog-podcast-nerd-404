@@ -1,0 +1,55 @@
+{
+  "entities": {
+    "Post": {
+      "title": "Post",
+      "description": "A blog post.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 150 },
+        "excerpt": { "type": "string", "maxLength": 300 },
+        "content": { "type": "string", "maxLength": 20000 },
+        "coverImage": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" },
+        "authorId": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["title", "excerpt", "content", "createdAt", "updatedAt", "authorId"]
+    },
+    "Video": {
+      "title": "Video",
+      "description": "A featured video from the YouTube channel.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 150 },
+        "youtubeUrl": { "type": "string", "maxLength": 500 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "number" },
+        "authorId": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["title", "youtubeUrl", "createdAt", "authorId"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "An admin user who can create posts and videos.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "maxLength": 255 }
+      },
+      "required": ["email"]
+    }
+  },
+  "firestore": {
+    "/posts/{postId}": {
+      "schema": { "$ref": "#/entities/Post" },
+      "description": "Stores all blog posts."
+    },
+    "/videos/{videoId}": {
+      "schema": { "$ref": "#/entities/Video" },
+      "description": "Stores all featured YouTube videos."
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/Admin" },
+      "description": "Stores admin users who have access to the dashboard."
+    }
+  }
+}
