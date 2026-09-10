@@ -1,7 +1,8 @@
-import React, { useState, useRef } from 'react';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import React, { useState, useRef, useEffect } from 'react';
+import { collection, addDoc, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { ShieldAlert, Plus, Loader2, FileText, Upload, Image as ImageIcon } from 'lucide-react';
+import { ShieldAlert, Plus, Loader2, FileText, Upload, Image as ImageIcon, Trash2, Edit2, X } from 'lucide-react';
+import { Post } from '../types';
 
 export default function Admin() {
   // Post form
@@ -15,6 +16,50 @@ export default function Admin() {
 
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+
+  // Manage Posts
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setPosts(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Post)));
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleEditClick = (post: Post) => {
+    setEditingId(post.id || null);
+    setTitle(post.title);
+    setExcerpt(post.excerpt);
+    setContent(post.content);
+    setCoverImage(post.coverImage || '');
+    setPostVideoUrl(post.videoUrl || '');
+    setImageType(post.coverImage?.startsWith('data:') ? 'upload' : 'url');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setTitle('');
+    setExcerpt('');
+    setContent('');
+    setCoverImage('');
+    setPostVideoUrl('');
+    setImageType('url');
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Tem certeza que deseja apagar este artigo?')) return;
+    try {
+      await deleteDoc(doc(db, 'posts', id));
+      setMessage('Artigo apagado com sucesso!');
+    } catch (err) {
+      console.error(err);
+      setMessage('Erro ao apagar artigo.');
+    }
+  };
 
   const processImageFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -63,19 +108,32 @@ export default function Admin() {
     setMessage('');
     
     try {
-      await addDoc(collection(db, 'posts'), {
-        title,
-        excerpt,
-        content,
-        coverImage,
-        videoUrl: postVideoUrl,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        authorId: 'anonymous_admin' // bypassed auth
-      });
-      setMessage('Post publicado com sucesso!');
-      setTitle(''); setExcerpt(''); setContent(''); setCoverImage(''); setPostVideoUrl('');
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (editingId) {
+        await updateDoc(doc(db, 'posts', editingId), {
+          title,
+          excerpt,
+          content,
+          coverImage,
+          videoUrl: postVideoUrl,
+          updatedAt: serverTimestamp(),
+        });
+        setMessage('Artigo atualizado com sucesso!');
+        cancelEdit();
+      } else {
+        await addDoc(collection(db, 'posts'), {
+          title,
+          excerpt,
+          content,
+          coverImage,
+          videoUrl: postVideoUrl,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          authorId: 'anonymous_admin' // bypassed auth
+        });
+        setMessage('Post publicado com sucesso!');
+        setTitle(''); setExcerpt(''); setContent(''); setCoverImage(''); setPostVideoUrl('');
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
     } catch (err) {
       try {
         handleFirestoreError(err, OperationType.CREATE, 'posts');
@@ -173,8 +231,15 @@ export default function Admin() {
                   className="w-full px-4 py-3 bg-[#050814] text-white border border-white/10 focus:bg-[#0b1f38] focus:ring-2 focus:ring-[#1fd2c9] focus:border-transparent outline-none transition-all rounded-md" />
               </div>
               <button disabled={saving} type="submit" className="w-full flex items-center justify-center gap-2 bg-[#1fd2c9] text-[#050814] font-bold uppercase tracking-wider py-4 hover:bg-white disabled:opacity-50 transition-colors rounded-md mt-4">
-                {saving ? <Loader2 className="animate-spin" size={20} /> : <><Plus size={20} /> Publicar Artigo no Site</>}
+                {saving ? <Loader2 className="animate-spin" size={20} /> : (
+                  editingId ? <><Edit2 size={20} /> Atualizar Artigo</> : <><Plus size={20} /> Publicar Artigo no Site</>
+                )}
               </button>
+              {editingId && (
+                <button type="button" onClick={cancelEdit} className="w-full flex items-center justify-center gap-2 bg-transparent text-gray-400 font-bold uppercase tracking-wider py-4 hover:text-white border border-gray-700 transition-colors rounded-md mt-2">
+                  <X size={20} /> Cancelar Edição
+                </button>
+              )}
             </form>
             
             {/* Pré-visualização */}
@@ -211,6 +276,42 @@ export default function Admin() {
             </div>
           </div>
         </div>
+
+        {/* Gerenciamento de Artigos */}
+        <div className="mt-16">
+          <div className="flex items-center gap-3 mb-8 pb-4 border-b border-white/10 text-[#1fd2c9]">
+            <FileText size={24} /> 
+            <h2 className="text-xl font-bold uppercase tracking-widest text-white">Artigos Publicados</h2>
+          </div>
+          
+          <div className="space-y-4">
+            {posts.map(post => (
+              <div key={post.id} className="bg-[#0b1f38]/50 border border-white/10 p-4 rounded-xl flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex items-center gap-4">
+                  {post.coverImage && (
+                    <img src={post.coverImage} alt={post.title} className="w-16 h-16 object-cover rounded-md bg-[#050814]" />
+                  )}
+                  <div>
+                    <h3 className="text-white font-bold text-lg">{post.title}</h3>
+                    <p className="text-gray-400 text-sm line-clamp-1 max-w-xl">{post.excerpt}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => handleEditClick(post)} className="flex items-center gap-2 px-4 py-2 bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white rounded-md transition-colors text-sm font-bold uppercase tracking-wider">
+                    <Edit2 size={16} /> Editar
+                  </button>
+                  <button onClick={() => handleDelete(post.id!)} className="flex items-center gap-2 px-4 py-2 bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white rounded-md transition-colors text-sm font-bold uppercase tracking-wider">
+                    <Trash2 size={16} /> Apagar
+                  </button>
+                </div>
+              </div>
+            ))}
+            {posts.length === 0 && (
+              <p className="text-gray-400 text-center py-8">Nenhum artigo publicado ainda.</p>
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );

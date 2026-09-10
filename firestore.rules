@@ -51,12 +51,25 @@ service cloud.firestore {
              (data.get('description', '') is string && data.get('description', '').size() <= 1000);
     }
 
+    function isValidComment(data) {
+      return data.keys().hasAll(['text', 'createdAt', 'authorName']) &&
+             data.text is string && data.text.size() <= 1000 && data.text.size() > 0 &&
+             data.authorName is string && data.authorName.size() <= 50 && data.authorName.size() > 0 &&
+             data.createdAt is timestamp;
+    }
+
     // Routes
     match /posts/{postId} {
       allow read: if true;
       allow create: if isValidId(postId) && isValidPost(incoming()) && incoming().createdAt == request.time && incoming().updatedAt == request.time && incoming().keys().size() <= 8;
       allow update: if isValidId(postId) && isValidPost(incoming()) && incoming().authorId == existing().authorId && incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'excerpt', 'content', 'coverImage', 'videoUrl', 'updatedAt']);
-      allow delete: if true;
+      allow delete: if isAdmin();
+      
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if isValidId(commentId) && isValidComment(incoming()) && incoming().createdAt == request.time && incoming().keys().size() <= 3;
+        allow delete: if isAdmin();
+      }
     }
 
     match /videos/{videoId} {

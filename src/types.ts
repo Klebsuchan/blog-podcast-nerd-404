@@ -24,6 +24,13 @@ export interface Video {
   authorId?: string;
 }
 
+export interface Comment {
+  id?: string;
+  text: string;
+  authorName: string;
+  createdAt: Timestamp;
+}
+
 export interface Admin {
   id?: string;
 }
