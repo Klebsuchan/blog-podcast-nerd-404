@@ -15,7 +15,7 @@ import CookieBanner from './components/CookieBanner';
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="flex flex-col min-h-screen bg-white">
+      <div className="flex flex-col min-h-screen bg-white overflow-x-hidden w-full max-w-[100vw]">
         <Navbar />
         <main className="flex-grow">
           <Routes>

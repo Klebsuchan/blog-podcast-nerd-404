@@ -1,2 +1,10 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+
+@layer base {
+  html, body {
+    @apply overflow-x-hidden w-full m-0 p-0;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+}

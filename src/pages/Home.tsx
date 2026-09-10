@@ -117,7 +117,7 @@ export default function Home() {
            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
              
              {/* Left Section: Dynamic Content (Panels) */}
-             <div className="lg:col-span-4 relative min-h-[400px] lg:min-h-[500px] hidden lg:flex flex-col justify-center">
+             <div className="lg:col-span-4 relative min-h-[400px] lg:min-h-[500px] flex flex-col justify-center order-2 lg:order-1">
                 <div className="grid grid-cols-2 grid-rows-2 gap-4 h-full max-h-[600px] w-full">
                    {/* Main Panel */}
                    <a href={paposDeNerdVideo?.youtubeUrl || "#"} target="_blank" rel="noopener noreferrer" className="col-span-2 row-span-1 relative bg-gray-900 border border-purple-500/30 hover:border-purple-400/80 rounded-[2rem] p-5 shadow-[0_0_30px_rgba(255,0,255,0.1)] overflow-hidden group hover:-translate-y-1 transition-all duration-300 block">
@@ -152,7 +152,7 @@ export default function Home() {
              </div>
        
              {/* Center Section: Titles & Actions */}
-             <div className="lg:col-span-5 flex flex-col items-center lg:items-start text-center lg:text-left z-20 relative lg:py-8">
+             <div className="lg:col-span-5 flex flex-col items-center lg:items-start text-center lg:text-left z-20 relative lg:py-8 order-1 lg:order-2">
                <div className="absolute inset-0 bg-[#0a0d1a]/40 backdrop-blur-3xl rounded-[3rem] border border-white/5 shadow-2xl -z-10"></div>
                <div className="p-8 lg:p-10 w-full">
                  {/* Badge */}
@@ -187,7 +187,7 @@ export default function Home() {
              </div>
        
              {/* Right Section: Cortes & Parceiros */}
-             <div className="lg:col-span-3 flex flex-col justify-between gap-6 z-20 lg:py-8">
+             <div className="lg:col-span-3 flex flex-col justify-between gap-6 z-20 lg:py-8 order-3">
                 {/* Cortes Recentes */}
                 <div className="bg-[#0a0d1a]/60 backdrop-blur-md border border-white/5 rounded-[2rem] p-6">
                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
@@ -256,19 +256,19 @@ export default function Home() {
       {/* YouTube Section (Gradient matched to logo) */}
       <div className="bg-gradient-to-r from-[#050814] via-[#0b1f38] to-[#1fd2c9] w-full py-16">
         <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
-          <div className="flex justify-between items-end mb-12 border-b border-[#ffffff1a] pb-4">
-             <h2 className="text-black bg-[#ffc107] text-3xl md:text-5xl font-bold uppercase inline-block px-4 py-2">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-0 mb-12 border-b border-[#ffffff1a] pb-4">
+             <h2 className="text-black bg-[#ffc107] text-3xl md:text-5xl font-bold uppercase inline-block px-4 py-2 self-start">
                Assista no Canal
              </h2>
-             <Link to="/videos" className="text-white hover:text-gray-300 flex items-center gap-1 font-bold tracking-widest text-sm uppercase">
-                Podcast Nerd 404 no Youtube <ArrowRight size={16} className="-rotate-45" />
+             <Link to="/videos" className="text-white hover:text-gray-300 flex items-center gap-1 font-bold tracking-widest text-sm uppercase self-start md:self-auto">
+                Podcast Nerd 404 no Youtube <ArrowRight size={16} className="-rotate-45 shrink-0" />
              </Link>
           </div>
 
-          <div className="relative group/carousel">
+          <div className="relative group/carousel px-4 md:px-0">
             <button 
               onClick={scrollLeft}
-              className="hidden md:flex absolute -left-4 top-[40%] -translate-y-1/2 z-20 bg-[#0b1f38] hover:bg-[#1fd2c9] text-[#1fd2c9] hover:text-black border border-[#1fd2c9]/50 p-2 rounded-full transition-colors shadow-[0_0_10px_rgba(31,210,201,0.2)] opacity-0 group-hover/carousel:opacity-100"
+              className="flex absolute left-0 md:-left-4 top-[40%] -translate-y-1/2 z-20 bg-[#0b1f38] hover:bg-[#1fd2c9] text-[#1fd2c9] hover:text-black border border-[#1fd2c9]/50 p-1 md:p-2 rounded-full transition-colors shadow-[0_0_10px_rgba(31,210,201,0.2)] opacity-100 md:opacity-0 md:group-hover/carousel:opacity-100"
               aria-label="Rolar para esquerda"
             >
               <ChevronLeft size={24} />
@@ -304,7 +304,7 @@ export default function Home() {
 
             <button 
               onClick={scrollRight}
-              className="hidden md:flex absolute -right-4 top-[40%] -translate-y-1/2 z-20 bg-[#0b1f38] hover:bg-[#1fd2c9] text-[#1fd2c9] hover:text-black border border-[#1fd2c9]/50 p-2 rounded-full transition-colors shadow-[0_0_10px_rgba(31,210,201,0.2)] opacity-0 group-hover/carousel:opacity-100"
+              className="flex absolute right-0 md:-right-4 top-[40%] -translate-y-1/2 z-20 bg-[#0b1f38] hover:bg-[#1fd2c9] text-[#1fd2c9] hover:text-black border border-[#1fd2c9]/50 p-1 md:p-2 rounded-full transition-colors shadow-[0_0_10px_rgba(31,210,201,0.2)] opacity-100 md:opacity-0 md:group-hover/carousel:opacity-100"
               aria-label="Rolar para direita"
             >
               <ChevronRight size={24} />
@@ -315,8 +315,8 @@ export default function Home() {
 
       {/* Additional Content Block (Matérias) */}
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-16">
-        <div className="border-t-[3px] border-[#ff7a00] pt-8 mb-12 flex justify-between items-start">
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 flex-1 pr-8">
+        <div className="border-t-[3px] border-[#ff7a00] pt-8 mb-12 flex flex-col-reverse md:flex-row justify-between items-start gap-8 md:gap-0">
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 flex-1 pr-0 md:pr-8 w-full">
              {filteredPosts.slice(0, 3).map((post) => (
                <Link key={post.id} to={`/post/${post.id}`} className="group flex flex-col gap-4">
                  <div className="aspect-[16/9] bg-gray-200 overflow-hidden">
@@ -332,7 +332,7 @@ export default function Home() {
                <p className="text-gray-400 text-sm col-span-3">Nenhuma matéria encontrada com esse termo.</p>
              )}
            </div>
-           <div className="bg-[#ff7a00] text-black font-bold uppercase text-xl px-4 py-1">
+           <div className="bg-[#ff7a00] text-black font-bold uppercase text-xl px-4 py-1 self-start">
              Matérias →
            </div>
         </div>
