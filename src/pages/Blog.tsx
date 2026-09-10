@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { Post } from '../types';
 import { Link } from 'react-router-dom';
@@ -12,18 +12,32 @@ export default function Blog() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let unsubscribe: () => void;
+
     async function fetchPosts() {
       try {
         const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
-        const snapshot = await getDocs(q);
-        setPosts(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Post)));
+        
+        unsubscribe = onSnapshot(q, (snapshot) => {
+          setPosts(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Post)));
+          setLoading(false);
+        }, (error) => {
+          handleFirestoreError(error, OperationType.LIST, 'posts');
+          setLoading(false);
+        });
       } catch (error) {
         handleFirestoreError(error, OperationType.LIST, 'posts');
-      } finally {
         setLoading(false);
       }
     }
+    
     fetchPosts();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
   return (

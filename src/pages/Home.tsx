@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { Post, Video } from '../types';
 import { Link } from 'react-router-dom';
@@ -11,13 +11,22 @@ export default function Home() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
+    let unsubscribe: () => void;
+
     async function fetchData() {
       try {
         const postsQ = query(collection(db, 'posts'), orderBy('createdAt', 'desc'), limit(10));
-        const postsSnapshot = await getDocs(postsQ);
-        setPosts(postsSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as Post)));
+        
+        unsubscribe = onSnapshot(postsQ, (postsSnapshot) => {
+          setPosts(postsSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as Post)));
+          setLoading(false);
+        }, (error) => {
+          handleFirestoreError(error, OperationType.LIST, 'posts');
+          setLoading(false);
+        });
 
         try {
           const res = await fetch('/api/youtube');
@@ -30,11 +39,17 @@ export default function Home() {
         }
       } catch (error) {
         handleFirestoreError(error, OperationType.LIST, 'posts/videos');
-      } finally {
         setLoading(false);
       }
     }
+    
     fetchData();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
   const featuredPosts = posts.slice(0, 4);
@@ -45,11 +60,21 @@ export default function Home() {
   const zueiraNerdVideo = regularVideos.find(v => v.title.toLowerCase().includes('zueira nerd show') || v.title.toLowerCase().includes('zueira nerd')) || regularVideos[1];
   const nerdsInvestemVideo = regularVideos.find(v => v.title.toLowerCase().includes('nerds investem')) || regularVideos[2];
   
-  const bottomVideos = regularVideos.filter(v => 
+  let bottomVideos = regularVideos.filter(v => 
       v.id !== paposDeNerdVideo?.id && 
       v.id !== zueiraNerdVideo?.id && 
       v.id !== nerdsInvestemVideo?.id
-  ).slice(0, 4);
+  );
+
+  let filteredPosts = posts;
+
+  if (searchQuery.trim() !== '') {
+    const queryLower = searchQuery.toLowerCase();
+    bottomVideos = videos.filter(v => v.title.toLowerCase().includes(queryLower));
+    filteredPosts = posts.filter(p => p.title.toLowerCase().includes(queryLower) || p.excerpt.toLowerCase().includes(queryLower));
+  } else {
+    bottomVideos = bottomVideos.slice(0, 4);
+  }
 
   // Shorts / Cortes
   let cortesVideos = videos.filter(v => v.isShort);
@@ -204,6 +229,24 @@ export default function Home() {
          </div>
       </div>
 
+      {/* Search Bar Section */}
+      <div className="bg-[#050814] w-full pt-10 pb-4">
+        <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
+          <div className="relative w-full max-w-2xl mx-auto">
+            <input 
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar por artigos ou vídeos..."
+              className="w-full px-6 py-4 pl-12 bg-[#0b1f38] text-white border border-[#1fd2c9]/30 focus:border-[#1fd2c9] focus:ring-1 focus:ring-[#1fd2c9] outline-none transition-all rounded-full placeholder-gray-500 font-mono text-sm shadow-[0_0_15px_rgba(31,210,201,0.1)]"
+            />
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#1fd2c9]">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* YouTube Section (Gradient matched to logo) */}
       <div className="bg-gradient-to-r from-[#050814] via-[#0b1f38] to-[#1fd2c9] w-full py-16">
         <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
@@ -250,17 +293,20 @@ export default function Home() {
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-16">
         <div className="border-t-[3px] border-[#ff7a00] pt-8 mb-12 flex justify-between items-start">
            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 flex-1 pr-8">
-             {regularPosts.slice(3, 6).map((post) => (
+             {filteredPosts.slice(0, 3).map((post) => (
                <Link key={post.id} to={`/post/${post.id}`} className="group flex flex-col gap-4">
                  <div className="aspect-[16/9] bg-gray-200 overflow-hidden">
                     {post.coverImage && (
                       <img src={post.coverImage} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     )}
                  </div>
-                 <h4 className="text-xl font-bold leading-tight group-hover:text-blue-700">{post.title}</h4>
+                 <h4 className="text-xl font-bold leading-tight group-hover:text-blue-700 text-white">{post.title}</h4>
                  <p className="text-gray-500 text-sm line-clamp-3">{post.excerpt}</p>
                </Link>
              ))}
+             {filteredPosts.length === 0 && (
+               <p className="text-gray-400 text-sm col-span-3">Nenhuma matéria encontrada com esse termo.</p>
+             )}
            </div>
            <div className="bg-[#ff7a00] text-black font-bold uppercase text-xl px-4 py-1">
              Matérias →
