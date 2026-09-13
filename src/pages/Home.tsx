@@ -381,8 +381,7 @@ export default function Home() {
           
           {/* Bottom Bar */}
           <div className="mt-16 pt-8 border-t border-gray-900/50 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-gray-500 text-xs font-medium">Podcast Nerd 404 © {new Date().getFullYear()}. Todos os direitos reservados.</p>
-            <p className="text-gray-500 text-xs font-medium flex items-center gap-1">Feito com <span className="text-red-500">♥</span> para os Nerds.</p>
+            <p className="text-gray-500 text-xs font-medium w-full text-center md:text-left">Podcast Nerd 404 © {new Date().getFullYear()}. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>
