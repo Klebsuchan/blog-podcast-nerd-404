@@ -15,7 +15,7 @@ export default function Navbar() {
     <header className="w-full font-sans sticky top-0 z-50">
       {/* Top Header - Gradient matched to logo background */}
       <div className="bg-gradient-to-r from-[#050814] via-[#0b1f38] to-[#1fd2c9] text-white">
-        <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
+        <div className="w-full px-4 lg:px-6">
           <div className="flex justify-between items-center h-[72px]">
             
             {/* Left Section: Logo & Nav Links */}

@@ -113,42 +113,42 @@ export default function Home() {
          {/* Grid overlay */}
          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
          
-         <div className="max-w-[1500px] mx-auto px-4 lg:px-8 relative z-10">
+         <div className="w-full px-4 lg:px-6 relative z-10">
            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
              
              {/* Left Section: Dynamic Content (Panels) */}
-             <div className="lg:col-span-4 relative min-h-[400px] lg:min-h-[500px] flex flex-col justify-center order-2 lg:order-1">
-                <div className="grid grid-cols-2 grid-rows-2 gap-4 h-full max-h-[600px] w-full">
-                   {/* Main Panel */}
-                   <a href={paposDeNerdVideo?.youtubeUrl || "#"} target="_blank" rel="noopener noreferrer" className="col-span-2 row-span-1 relative bg-gray-900 border border-purple-500/30 hover:border-purple-400/80 rounded-[2rem] p-5 shadow-[0_0_30px_rgba(255,0,255,0.1)] overflow-hidden group hover:-translate-y-1 transition-all duration-300 block">
-                      <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${paposDeNerdVideo?.thumbnailUrl || 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?q=80&w=600'})` }}></div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
-                      <div className="relative h-full flex flex-col justify-end">
-                        <h3 className="text-xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-[#ff00ff] to-[#00ffff] mb-1 drop-shadow-lg">PAPOS DE NERD</h3>
-                        <p className="text-xs text-gray-200 font-medium line-clamp-2 drop-shadow-md">{paposDeNerdVideo?.title}</p>
-                      </div>
-                   </a>
-       
+             <div className="lg:col-span-4 relative flex flex-col justify-center order-2 lg:order-1 gap-4">
+                 {/* Main Panel */}
+                 <a href={paposDeNerdVideo?.youtubeUrl || "#"} target="_blank" rel="noopener noreferrer" className="w-full aspect-video relative bg-gray-900 border border-purple-500/30 hover:border-purple-400/80 rounded-[1.5rem] p-4 shadow-[0_0_30px_rgba(255,0,255,0.1)] overflow-hidden group hover:-translate-y-1 transition-all duration-300 block">
+                    <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${paposDeNerdVideo?.thumbnailUrl || 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?q=80&w=600'})` }}></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent"></div>
+                    <div className="relative h-full flex flex-col justify-end">
+                      <h3 className="text-lg lg:text-xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-[#ff00ff] to-[#00ffff] mb-1 drop-shadow-lg">PAPOS DE NERD</h3>
+                      <p className="text-[10px] lg:text-xs text-gray-200 font-medium line-clamp-2 drop-shadow-md">{paposDeNerdVideo?.title}</p>
+                    </div>
+                 </a>
+     
+                 <div className="grid grid-cols-2 gap-4 w-full">
                    {/* Bottom-Left Panel */}
-                   <a href={zueiraNerdVideo?.youtubeUrl || "#"} target="_blank" rel="noopener noreferrer" className="col-span-1 row-span-1 relative bg-gray-900 border border-cyan-500/30 hover:border-cyan-400/80 rounded-[2rem] p-4 shadow-[0_0_30px_rgba(0,255,255,0.1)] overflow-hidden group hover:-translate-y-1 transition-all duration-300 block">
+                   <a href={zueiraNerdVideo?.youtubeUrl || "#"} target="_blank" rel="noopener noreferrer" className="w-full aspect-video relative bg-gray-900 border border-cyan-500/30 hover:border-cyan-400/80 rounded-[1rem] p-3 shadow-[0_0_30px_rgba(0,255,255,0.1)] overflow-hidden group hover:-translate-y-1 transition-all duration-300 block">
                       <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${zueiraNerdVideo?.thumbnailUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=400'})` }}></div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent"></div>
                       <div className="relative h-full flex flex-col justify-end">
-                        <h3 className="text-xs font-bold text-cyan-400 mb-1 leading-tight uppercase tracking-wider drop-shadow-md">ZUEIRA NERD</h3>
-                        <p className="text-[10px] text-gray-200 line-clamp-2 drop-shadow-md">{zueiraNerdVideo?.title}</p>
+                        <h3 className="text-[9px] lg:text-[10px] font-bold text-cyan-400 mb-1 leading-tight uppercase tracking-wider drop-shadow-md">ZUEIRA NERD</h3>
+                        <p className="text-[8px] lg:text-[9px] text-gray-200 line-clamp-2 drop-shadow-md leading-snug">{zueiraNerdVideo?.title}</p>
                       </div>
                    </a>
        
                    {/* Bottom-Right Panel */}
-                   <a href={nerdsInvestemVideo?.youtubeUrl || "#"} target="_blank" rel="noopener noreferrer" className="col-span-1 row-span-1 relative bg-gray-900 border border-green-500/30 hover:border-green-400/80 rounded-[2rem] p-4 shadow-[0_0_30px_rgba(0,255,0,0.1)] overflow-hidden group hover:-translate-y-1 transition-all duration-300 block">
+                   <a href={nerdsInvestemVideo?.youtubeUrl || "#"} target="_blank" rel="noopener noreferrer" className="w-full aspect-video relative bg-gray-900 border border-green-500/30 hover:border-green-400/80 rounded-[1rem] p-3 shadow-[0_0_30px_rgba(0,255,0,0.1)] overflow-hidden group hover:-translate-y-1 transition-all duration-300 block">
                       <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${nerdsInvestemVideo?.thumbnailUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=400'})` }}></div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent"></div>
                       <div className="relative h-full flex flex-col justify-end">
-                        <h3 className="text-xs font-bold text-green-400 mb-1 leading-tight uppercase tracking-wider drop-shadow-md">NERDS INVESTEM</h3>
-                        <p className="text-[10px] text-gray-200 line-clamp-2 drop-shadow-md">{nerdsInvestemVideo?.title}</p>
+                        <h3 className="text-[9px] lg:text-[10px] font-bold text-green-400 mb-1 leading-tight uppercase tracking-wider drop-shadow-md">NERDS INVESTEM</h3>
+                        <p className="text-[8px] lg:text-[9px] text-gray-200 line-clamp-2 drop-shadow-md leading-snug">{nerdsInvestemVideo?.title}</p>
                       </div>
                    </a>
-                </div>
+                 </div>
              </div>
        
              {/* Center Section: Titles & Actions */}
@@ -237,7 +237,7 @@ export default function Home() {
 
       {/* Search Bar Section */}
       <div className="bg-[#050814] w-full pt-10 pb-4">
-        <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
+        <div className="w-full px-4 lg:px-6">
           <div className="relative w-full max-w-2xl mx-auto">
             <input 
               type="text"
@@ -255,7 +255,7 @@ export default function Home() {
 
       {/* YouTube Section (Gradient matched to logo) */}
       <div className="bg-gradient-to-r from-[#050814] via-[#0b1f38] to-[#1fd2c9] w-full py-16">
-        <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
+        <div className="w-full px-4 lg:px-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-0 mb-12 border-b border-[#ffffff1a] pb-4">
              <h2 className="text-black bg-[#ffc107] text-3xl md:text-5xl font-bold uppercase inline-block px-4 py-2 self-start">
                Assista no Canal
@@ -314,7 +314,7 @@ export default function Home() {
       </div>
 
       {/* Additional Content Block (Matérias) */}
-      <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-16">
+      <div className="w-full px-4 lg:px-6 py-16">
         <div className="border-t-[3px] border-[#ff7a00] pt-8 mb-12 flex flex-col-reverse md:flex-row justify-between items-start gap-8 md:gap-0">
            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 flex-1 pr-0 md:pr-8 w-full">
              {filteredPosts.slice(0, 3).map((post) => (
@@ -340,7 +340,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="bg-[#02050f] text-white py-16 border-t border-gray-900">
-        <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
+        <div className="w-full px-4 lg:px-6">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
             
             {/* Logo and Description */}
@@ -417,43 +417,94 @@ export default function Home() {
       </Modal>
 
       <Modal isOpen={activeModal === 'contact'} onClose={() => setActiveModal(null)} title="Fale Conosco">
-        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setActiveModal(null); alert('Mensagem enviada com sucesso!'); }}>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
-            <input type="text" required className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
-            <input type="email" required className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem</label>
-            <textarea required rows={4} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></textarea>
-          </div>
-          <button type="submit" className="bg-[#0000ff] text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors font-bold uppercase tracking-wider text-sm w-full">
-            Enviar Mensagem
-          </button>
-        </form>
+        <WhatsAppContactForm type="Fale Conosco" onClose={() => setActiveModal(null)} />
       </Modal>
 
       <Modal isOpen={activeModal === 'commercial'} onClose={() => setActiveModal(null)} title="Contato Comercial">
-        <div className="space-y-6 text-gray-600">
-          <p>Tem interesse em anunciar no Podcast Nerd 404 ou propor uma parceria?</p>
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-            <h4 className="font-bold text-gray-900 mb-2 uppercase tracking-wider text-sm">Oportunidades de Parceria</h4>
-            <ul className="list-disc pl-5 space-y-2 text-sm">
-              <li>Anúncios (Mid-roll e Pre-roll)</li>
-              <li>Episódios Patrocinados</li>
-              <li>Ações em Mídias Sociais</li>
-              <li>Presença em Eventos</li>
-            </ul>
-          </div>
-          <p className="font-medium text-gray-900">
-            Envie sua proposta para: <a href="mailto:comercial@nerd404.com.br" className="text-blue-600 hover:underline">comercial@nerd404.com.br</a>
-          </p>
-        </div>
+        <WhatsAppContactForm type="Contato Comercial" onClose={() => setActiveModal(null)} />
       </Modal>
 
     </div>
+  );
+}
+
+function WhatsAppContactForm({ type, onClose }: { type: string, onClose: () => void }) {
+  const [formData, setFormData] = useState({
+    nome: '',
+    ocupacao: '',
+    assunto: '',
+    horarios: ''
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const phoneNumber = "5554999101232";
+    const text = `*Nova mensagem - ${type}*\n\n` +
+                 `*Nome:* ${formData.nome}\n` +
+                 `*O que faz (Ocupação):* ${formData.ocupacao}\n` +
+                 `*O que gostaria de conversar:* ${formData.assunto}\n` +
+                 `*Horários disponíveis:* ${formData.horarios}`;
+                 
+    const encodedText = encodeURIComponent(text);
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedText}`;
+    
+    window.open(whatsappUrl, '_blank');
+    onClose();
+  };
+
+  return (
+    <form className="space-y-4" onSubmit={handleSubmit}>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+        <input 
+          type="text" 
+          required 
+          value={formData.nome}
+          onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+          placeholder="Seu nome completo"
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900" 
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">O que você faz?</label>
+        <input 
+          type="text" 
+          required 
+          value={formData.ocupacao}
+          onChange={(e) => setFormData({ ...formData, ocupacao: e.target.value })}
+          placeholder="Sua profissão ou ocupação"
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900" 
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">O que gostaria de conversar?</label>
+        <textarea 
+          required 
+          rows={3} 
+          value={formData.assunto}
+          onChange={(e) => setFormData({ ...formData, assunto: e.target.value })}
+          placeholder={type === 'Contato Comercial' ? "Proposta de parceria, patrocínio..." : "Sua dúvida, sugestão ou feedback..."}
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+        ></textarea>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Horários disponíveis para contato</label>
+        <input 
+          type="text" 
+          required 
+          value={formData.horarios}
+          onChange={(e) => setFormData({ ...formData, horarios: e.target.value })}
+          placeholder="Ex: Seg a Sex, das 14h às 18h"
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900" 
+        />
+      </div>
+      <div className="pt-2">
+        <button type="submit" className="bg-[#25D366] text-white px-6 py-3 rounded-md hover:bg-[#128C7E] transition-colors font-bold uppercase tracking-wider text-sm w-full flex items-center justify-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+          Enviar pelo WhatsApp
+        </button>
+      </div>
+    </form>
   );
 }
